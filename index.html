@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام التحقق من البيانات</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 450px; text-align: center; border-top: 5px solid #007bff; }
+        
+        /* تنسيق الشعار */
+        .logo { width: 120px; height: auto; margin-bottom: 20px; }
+        
+        h2 { color: #333; margin-bottom: 10px; font-size: 24px; }
+        p { color: #666; font-size: 15px; margin-bottom: 25px; line-height: 1.5; }
+        input { width: 100%; padding: 15px; margin-bottom: 20px; border: 2px solid #eee; border-radius: 10px; box-sizing: border-box; font-size: 16px; transition: border-color 0.3s; text-align: center; }
+        input:focus { border-color: #007bff; outline: none; }
+        button { width: 100%; padding: 15px; background-color: #007bff; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: bold; transition: background 0.3s; }
+        button:hover { background-color: #0056b3; }
+        
+        #message { margin-top: 30px; font-size: 16px; line-height: 1.6; }
+        .success { color: #28a745; background: #e9f7ef; padding: 15px; border-radius: 8px; border-right: 5px solid #28a745; text-align: right; }
+        .error { color: #dc3545; background: #fdf2f2; padding: 15px; border-radius: 8px; border-right: 5px solid #dc3545; text-align: right; }
+        .loading { color: #007bff; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <img src="logo.png" alt="شعار المبادرة" class="logo">
+    
+    <h2>التحقق من التسجيل</h2>
+    <p>يرجى إدخال رقم الهوية لرب الأسرة المسجِل للتحقق من وجود بيانات أسرته في قاعدة البيانات</p>
+    
+    <input type="text" id="userInput" placeholder="أدخل رقم الهوية لرب الأسرة المسجِل">
+    <button onclick="verifyIdentity()">تحقق الآن</button>
+    
+    <div id="message"></div>
+</div>
+
+<script>
+    async function verifyIdentity() {
+        const inputVal = document.getElementById('userInput').value.trim();
+        const msgDiv = document.getElementById('message');
+        
+        if (!inputVal) {
+            msgDiv.innerHTML = "<div class='error'>⚠️ يرجى إدخال رقم الهوية أولاً</div>";
+            return;
+        }
+
+        msgDiv.innerHTML = "<div class='loading'>🔄 جاري فحص قاعدة البيانات...</div>";
+
+        try {
+            // ملاحظة: عند الرفع على Render، استبدل localhost برابط السيرفر الجديد
+            const response = await fetch(`http://localhost:3000/check/${encodeURIComponent(inputVal)}`);
+            const result = await response.json();
+
+            if (result.status === 'found') {
+                msgDiv.innerHTML = `
+                    <div class="success">
+                        ✅ <strong>تم التحقق بنجاح!</strong><br>
+                        الاسم: ${result.fullName}<br>
+                        الحالة: الأسرة مسجلة في المبادرة
+                    </div>`;
+            } else if (result.status === 'not_found') {
+                msgDiv.innerHTML = `
+                    <div class="error">
+                        ❌ <strong>غير موجود</strong><br>
+                        عذراً، رقم الهوية هذا غير مسجل لدينا حالياً.
+                    </div>`;
+            } else {
+                msgDiv.innerHTML = "<div class='error'>حدث خطأ أثناء محاولة الوصول للبيانات</div>";
+            }
+        } catch (error) {
+            msgDiv.innerHTML = "<div class='error'>⚠️ تعذر الاتصال بالسيرفر. تأكد أن نظام التشغيل يعمل خلف الكواليس.</div>";
+        }
+    }
+</script>
+
+</body>
+</html>
