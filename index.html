@@ -52,7 +52,7 @@
 
         try {
             // ملاحظة: عند الرفع على Render، استبدل localhost برابط السيرفر الجديد
-            const response = await fetch(`http://localhost:3000/check/${encodeURIComponent(inputVal)}`);
+            const response = await fetch(`fetch${encodeURIComponent(inputVal)}`);
             const result = await response.json();
 
             if (result.status === 'found') {
