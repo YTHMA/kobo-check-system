@@ -3,6 +3,7 @@ const axios = require('axios');
 const cors = require('cors');
 const app = express();
 
+// تفعيل CORS عشان يسمح لصفحة الجيتهاب تفتح السيرفر
 app.use(cors());
 app.use(express.json());
 
@@ -14,12 +15,10 @@ app.get('/check/:value', async (req, res) => {
     const searchValue = req.params.value.trim();
     console.log(`🔍 جاري البحث السريع عن: [${searchValue}]`);
 
-    // بناء استعلام يبحث في رب الأسرة (المستوى الأول) وفي أفراد العائلة (المجموعات)
     const query = {
         "$or": [
-            { "n_id": searchValue },           // رقم هوية رب الأسرة
-            { "fam_rep/n_id2": searchValue },  // رقم هوية أفراد العائلة (العمود الثاني)
-            { "f_name": searchValue }           // بحث بالاسم الأول (اختياري)
+            { "n_id": searchValue },
+            { "fam_rep/n_id2": searchValue }
         ]
     };
 
@@ -33,12 +32,9 @@ app.get('/check/:value', async (req, res) => {
             const user = response.data.results[0];
             let fullName = "";
 
-            // تحديد من هو الشخص الذي تم العثور عليه لعرض اسمه الصحيح
             if (String(user.n_id) === searchValue) {
-                // الشخص هو رب الأسرة
                 fullName = `${user.f_name || ''} ${user.m_name || ''} ${user.g_name || ''} ${user.l_name || ''}`;
             } else if (user.fam_rep && Array.isArray(user.fam_rep)) {
-                // الشخص فرد من العائلة، نبحث عن اسمه داخل المصفوفة
                 const member = user.fam_rep.find(m => String(m['fam_rep/n_id2']) === searchValue);
                 if (member) {
                     fullName = `${member['fam_rep/f_name2'] || ''} ${member['fam_rep/m_name2'] || ''} ${member['fam_rep/g_name2'] || ''} ${member['fam_rep/l_name2'] || ''}`;
@@ -58,8 +54,15 @@ app.get('/check/:value', async (req, res) => {
     }
 });
 
-const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`✅ Server is running on http://localhost:${PORT}`);
-    console.log(`🚀 السيرفر يعمل بنظام البحث المباشر (الأسرع والأنسب لـ 7000 سجل)`);
+// إضافة صفحة رئيسية بسيطة عشان رسالة "القطر" تختفي وتعرف إن السيرفر شغال
+app.get('/', (req, res) => {
+    res.send('🚀 السيرفر يعمل بنجاح وجاهز لاستقبال الطلبات!');
+});
+
+// --- التعديل الجوهري للرفع أونلاين ---
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ السيرفر يعمل الآن على بورت: ${PORT}`);
+    console.log(`🔗 جرب الرابط أونلاين الآن!`);
 });
