@@ -51,8 +51,15 @@
         msgDiv.innerHTML = "<div class='loading'>🔄 جاري فحص قاعدة البيانات...</div>";
 
         try {
-            // ملاحظة: عند الرفع على Render، استبدل localhost برابط السيرفر الجديد
-            const response = await fetch(`fetch${encodeURIComponent(inputVal)}`);
+            // تحديث الرابط ليتصل بسيرفر Railway
+            // تأكد من تغيير 'your-app-name.up.railway.app' للرابط الحقيقي الخاص بك
+            const apiUrl = `https://kobo-check-system-production.up.railway.app/${encodeURIComponent(inputVal)}`;
+            
+            const response = await fetch(apiUrl);
+            
+            // التأكد من أن السيرفر رد بنجاح
+            if (!response.ok) throw new Error('Network response was not ok');
+
             const result = await response.json();
 
             if (result.status === 'found') {
@@ -69,13 +76,13 @@
                         عذراً، رقم الهوية هذا غير مسجل لدينا حالياً.
                     </div>`;
             } else {
-                msgDiv.innerHTML = "<div class='error'>حدث خطأ أثناء محاولة الوصول للبيانات</div>";
+                msgDiv.innerHTML = "<div class='error'>حدث خطأ غير متوقع في البيانات</div>";
             }
         } catch (error) {
-            msgDiv.innerHTML = "<div class='error'>⚠️ تعذر الاتصال بالسيرفر. تأكد أن نظام التشغيل يعمل خلف الكواليس.</div>";
+            console.error("Fetch Error:", error);
+            msgDiv.innerHTML = "<div class='error'>⚠️ تعذر الاتصال بالسيرفر. تأكد أن السيرفر يعمل على Railway.</div>";
         }
     }
 </script>
-
 </body>
 </html>
