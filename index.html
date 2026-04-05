@@ -51,13 +51,11 @@
         msgDiv.innerHTML = "<div class='loading'>🔄 جاري فحص قاعدة البيانات...</div>";
 
         try {
-            // تحديث الرابط ليتصل بسيرفر Railway
-            // تأكد من تغيير 'your-app-name.up.railway.app' للرابط الحقيقي الخاص بك
-            const apiUrl = `https://kobo-check-system-production.up.railway.app/${encodeURIComponent(inputVal)}`;
+            // تم التحديث للرابط الخاص بـ Vercel مع إضافة مسار /check/
+            const apiUrl = `https://kobo-check-system.vercel.app/check/${encodeURIComponent(inputVal)}`;
             
             const response = await fetch(apiUrl);
             
-            // التأكد من أن السيرفر رد بنجاح
             if (!response.ok) throw new Error('Network response was not ok');
 
             const result = await response.json();
@@ -80,7 +78,7 @@
             }
         } catch (error) {
             console.error("Fetch Error:", error);
-            msgDiv.innerHTML = "<div class='error'>⚠️ تعذر الاتصال بالسيرفر. تأكد أن السيرفر يعمل على Railway.</div>";
+            msgDiv.innerHTML = "<div class='error'>⚠️ تعذر الاتصال بالسيرفر. يرجى المحاولة مرة أخرى لاحقاً.</div>";
         }
     }
 </script>
